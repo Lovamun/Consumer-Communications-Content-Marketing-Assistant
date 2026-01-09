@@ -1,12 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
-import { Target, MessageCircle, PenTool, Sparkles, Video, ArrowRight, Loader2, RefreshCw, Calendar, Sliders, CheckCircle, Clock } from 'lucide-react';
+import { Target, MessageCircle, PenTool, Sparkles, Video, ArrowRight, Loader2, RefreshCw, Calendar, Sliders, CheckCircle, Clock, ChevronDown } from 'lucide-react';
 import { BrandDNA, CampaignType, Platform, MarketingAsset, ToneSettings } from '../types';
 import { generateCampaignIdeas, generateAssetContent, generateImage, generateVideo } from '../services/geminiService';
 
 interface CampaignHubProps {
   dna: BrandDNA;
 }
+
+const ANIMATION_STYLES = [
+  { id: 'Cinematic', label: 'Cinematic', description: 'Subtle pans and dramatic lighting' },
+  { id: 'Corporate', label: 'Corporate', description: 'Clean, professional, and smooth' },
+  { id: 'Playful', label: 'Playful', description: 'Fun, energetic, and bouncing' },
+  { id: 'Minimalist', label: 'Minimalist', description: 'Simple, clean motion design' },
+  { id: 'High Energy', label: 'High Energy', description: 'Fast-paced and rhythmic' },
+];
 
 const CampaignHub: React.FC<CampaignHubProps> = ({ dna: initialDna }) => {
   const [dna, setDna] = useState<BrandDNA>(initialDna);
@@ -21,6 +29,7 @@ const CampaignHub: React.FC<CampaignHubProps> = ({ dna: initialDna }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduledDate, setScheduledDate] = useState('');
+  const [selectedAnimationStyle, setSelectedAnimationStyle] = useState(ANIMATION_STYLES[0]);
 
   useEffect(() => {
     if (goal && !selectedIdea) {
@@ -75,7 +84,8 @@ const CampaignHub: React.FC<CampaignHubProps> = ({ dna: initialDna }) => {
     if (!editingAsset?.imageUrl) return;
     setIsAnimating(true);
     try {
-      const videoUrl = await generateVideo(editingAsset.imageUrl, `A cinematic motion ad for ${selectedIdea.theme}, subtle transitions, high quality`);
+      const stylePrompt = `A ${selectedAnimationStyle.id.toLowerCase()} motion ad with ${selectedAnimationStyle.description}`;
+      const videoUrl = await generateVideo(editingAsset.imageUrl, `${stylePrompt} for ${selectedIdea.theme}, high quality, realistic textures`);
       const updatedAssets = assets.map(a => a.id === editingAsset.id ? { ...a, videoUrl } : a);
       setAssets(updatedAssets);
       setEditingAsset(updatedAssets.find(a => a.id === editingAsset.id) || null);
@@ -326,6 +336,26 @@ const CampaignHub: React.FC<CampaignHubProps> = ({ dna: initialDna }) => {
                           {activeTab} Preview
                         </div>
                       </div>
+
+                      {/* Animation Style Selector */}
+                      <div className="mt-6">
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Animation Style</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {ANIMATION_STYLES.map((style) => (
+                            <button
+                              key={style.id}
+                              onClick={() => setSelectedAnimationStyle(style)}
+                              className={`px-3 py-2 rounded-xl text-[10px] font-bold transition-all border ${
+                                selectedAnimationStyle.id === style.id
+                                  ? 'bg-blue-600 border-blue-600 text-white'
+                                  : 'bg-gray-50 border-gray-100 text-gray-500 hover:bg-gray-100'
+                              }`}
+                            >
+                              {style.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                       
                       <div className="mt-8 grid grid-cols-2 gap-4">
                         <button 
@@ -334,7 +364,7 @@ const CampaignHub: React.FC<CampaignHubProps> = ({ dna: initialDna }) => {
                           className="flex items-center justify-center gap-2 py-4 bg-gray-900 text-white rounded-2xl font-bold hover:bg-black transition-all shadow-xl shadow-gray-200 disabled:opacity-50"
                         >
                           {isAnimating ? <Loader2 className="animate-spin" size={18} /> : <Video size={18} />}
-                          {isAnimating ? 'Animating...' : 'Animate (Veo)'}
+                          {isAnimating ? 'Animating...' : `Animate (${selectedAnimationStyle.label})`}
                         </button>
                         <button 
                           onClick={() => setShowScheduleModal(true)}
