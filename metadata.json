@@ -1,0 +1,8 @@
+{
+  "name": "Consumer Communication Content Marketing Assistant",
+  "description": "An AI-powered marketing suite for UK businesses to extract brand DNA, generate multi-channel campaigns, and create on-brand images and videos.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
